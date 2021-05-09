@@ -115,17 +115,24 @@ defmodule SimpleChess.CLI do
 
   # 子 chess can only go right [x, y+1] or left [x, y-1] depends on which color player pick
   def zi_move(map, location, color) do
-
-    # 1. check location validation
     player = Map.fetch!(map, color)
     current = Map.fetch!(player, :zi)
+    # 0. whether token is eaten by opponent
+    if current == [0, 0] do
+      IO.puts "The token cannot use.\n"
+      System.halt(0) # exit
+    end
+
+    # 1. check location validation
     x = Enum.at(current, 0)
     y = Enum.at(current, 1)
+    locx = Enum.at(location, 0)
+    locy = Enum.at(location, 1)
 
     valid_move =
       if color == :blue do [x, y+1] else [x, y-1] end
 
-    if location != valid_move do
+    if location != valid_move or locx > 4 or locy > 3 or locx < 1 or locy < 1 do
       IO.puts "Invalid move\n"
       System.halt(0) # exit
     else
@@ -150,17 +157,26 @@ defmodule SimpleChess.CLI do
 
     player = Map.fetch!(map, color)
     current = Map.fetch!(player, :jiang)
+
+    # 0. whether token is eaten by opponent
+    if current == [0, 0] do
+      IO.puts "The token cannot use.\n"
+      System.halt(0) # exit
+    end
+
     x = Enum.at(current, 0)
     y = Enum.at(current, 1)
+    locx = Enum.at(location, 0)
+    locy = Enum.at(location, 1)
 
     # 1. check location validation
-    if location not in [[x, y+1], [x, y-1], [x+1, y], [x-1, y]] do
+
+    if location not in [[x, y+1], [x, y-1], [x+1, y], [x-1, y]] or locx > 4 or locy > 3 or locx < 1 or locy < 1 do
       IO.puts "Invalid move\n"
       System.halt(0) # exit
     else
       # 2. if occupied by other token, eat
       all = Map.fetch!(map, :all)
-
       if location in all do      # replace token
         occupied(map, location, current, color, :jiang)
       else         # not occupied
@@ -175,11 +191,20 @@ defmodule SimpleChess.CLI do
   def xiang_move(map, location, color) do
     player = Map.fetch!(map, color)
     current = Map.fetch!(player, :xiang)
+
+    # 0. whether token is eaten by opponent
+    if current == [0, 0] do
+      IO.puts "The token cannot use.\n"
+      System.halt(0) # exit
+    end
+
     x = Enum.at(current, 0)
     y = Enum.at(current, 1)
+    locx = Enum.at(location, 0)
+    locy = Enum.at(location, 1)
 
     # 1. check location validation
-    if location not in [[x+1, y+1], [x+1, y-1], [x-1, y+1], [x-1, y-1]] do
+    if location not in [[x+1, y+1], [x+1, y-1], [x-1, y+1], [x-1, y-1]] or locx > 4 or locy > 3 or locx < 1 or locy < 1 do
       IO.puts "Invalid move\n"
       System.halt(0) # exit
     else
@@ -198,11 +223,22 @@ defmodule SimpleChess.CLI do
   def wang_move(map, location, color) do
     player = Map.fetch!(map, color)
     current = Map.fetch!(player, :wang)
+
+    # 0. whether token is eaten by opponent
+    if current == [0, 0] do
+      IO.puts "The token cannot use.\n"
+      System.halt(0) # exit
+    end
+
+
     x = Enum.at(current, 0)
     y = Enum.at(current, 1)
+    locx = Enum.at(location, 0)
+    locy = Enum.at(location, 1)
 
     # 1. check location validation
-    if location not in [[x+1, y+1], [x+1, y-1], [x-1, y+1], [x-1, y-1], [x, y+1], [x, y-1], [x+1, y], [x-1, y]] do
+    if location not in [[x+1, y+1], [x+1, y-1], [x-1, y+1], [x-1, y-1], [x, y+1], [x, y-1], [x+1, y], [x-1, y]]
+    or (locx > 4 or locy > 3 or locx < 1 or locy < 1) do
       IO.puts "Invalid move\n"
       System.halt(0) # exit
     else
@@ -253,7 +289,7 @@ defmodule SimpleChess.CLI do
   end
 
   def init_board() do
-    arr = [[2,2], [1,3], [1,1], [1,2], [2,3], [1,4], [3,4], [2,4]]
+    arr = [[2,2], [3,1], [1,1], [2,1], [2,3], [1,4], [3,4], [2,4]]
     board = ["相", "  ", "  ", "将",
           "王", "子", "子", "王",
           "将", "  ", "  ", "相"]
@@ -307,6 +343,9 @@ defmodule SimpleChess.CLI do
     y = IO.gets "Pick the col of new location: "
     new_location = [String.trim_trailing(x) |> String.to_integer(), String.trim_trailing(y) |> String.to_integer()]
     pick = String.trim_trailing(pick)
+
+    # check validation of pick
+
     new_map =
       cond do
         pick == "1" ->
